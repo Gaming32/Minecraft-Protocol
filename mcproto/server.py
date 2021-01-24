@@ -59,6 +59,7 @@ class Server:
         return (proto, local_addr, local_port, next_state)
 
     def _send_status(self, conn: Connection, handshake):
+        get_packet_safe(conn.connection)
         result = self._invoke_singular_event('status', conn, *handshake[:-1])
         json_data = json.dumps(result)
         stream = io.BytesIO()
