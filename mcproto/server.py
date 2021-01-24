@@ -63,7 +63,7 @@ class Server:
         # stream = io.BytesIO()
         # stream.write(number.to_bytes(8, 'big', signed=True))
         # conn.connection.send(make_packet(0x01, stream.getvalue()))
-        result = self._invoke_singular_event('status', conn, *handshake)
+        result = self._invoke_singular_event('status', conn, *handshake[:-1])
         json_data = json.dumps(result)
         stream = io.BytesIO()
         write_string(stream, json_data)
