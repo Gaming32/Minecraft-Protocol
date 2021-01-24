@@ -65,7 +65,7 @@ class Server:
         write_string(stream, json_data)
         conn.connection.send(make_packet(0x00, stream.getvalue()))
         try:
-            packid, pack = get_packet_safe(conn)
+            packid, pack = get_packet_safe(conn.connection)
         except ConnectionError:
             pass
         else:
