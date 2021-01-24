@@ -97,4 +97,3 @@ class Server:
             self._invoke_event('handshake', conn, *handshake_result)
             if handshake_result[-1] == 1:
                 self._send_status(new_connection, handshake_result)
-                conn.close()
