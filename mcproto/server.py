@@ -48,7 +48,7 @@ class Server:
                 evobj(evname, *args, **kwargs)
     
     def _handshake(self, conn: socket.socket):
-        id, data = get_packet_safe(conn)
+        id, data = get_packet(conn)
         if id != 0x00:
             return None
         stream = io.BytesIO(data)

@@ -50,6 +50,7 @@ def write_var_int(stream:io.RawIOBase, value):
 def get_packet(data):
     stream = io.BytesIO(data)
     length = read_var_int(stream)
+    length += stream.tell()
     packet_id = read_var_int(stream)
     length -= stream.tell()
     return packet_id, stream.read(length)
