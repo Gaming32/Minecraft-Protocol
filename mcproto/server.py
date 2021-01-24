@@ -59,15 +59,20 @@ class Server:
         return (proto, local_addr, local_port, next_state)
 
     def _send_status(self, conn: Connection, handshake):
-        # number = int.from_bytes(pack, 'big', signed=True)
-        # stream = io.BytesIO()
-        # stream.write(number.to_bytes(8, 'big', signed=True))
-        # conn.connection.send(make_packet(0x01, stream.getvalue()))
         result = self._invoke_singular_event('status', conn, *handshake[:-1])
         json_data = json.dumps(result)
         stream = io.BytesIO()
         write_string(stream, json_data)
         conn.connection.send(make_packet(0x00, stream.getvalue()))
+        try:
+            packid, pack = get_packet_safe(conn)
+        except ConnectionError:
+            pass
+        else:
+            number = int.from_bytes(pack, 'big', signed=True)
+            stream = io.BytesIO()
+            stream.write(number.to_bytes(8, 'big', signed=True))
+            conn.connection.send(make_packet(0x01, stream.getvalue()))
 
     def on(self, event, *callbacks):
         if event in self._singular_events:
