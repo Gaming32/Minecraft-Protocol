@@ -1,11 +1,13 @@
 import socket, io, json
-from mojang_api.servers import authserver
-protocol_version = 498
+# from mojang_api.servers import authserver
+PROTOCOL_VERSION = 754
+
 
 client_packet_type_names = []
 client_packet_type_info = {}
 
-def _read_var_int(stream:io.RawIOBase, maxsize):
+
+def _read_var_int(stream: io.RawIOBase, maxsize):
     num_read = 0
     result = 0
     while True:
@@ -22,13 +24,17 @@ def _read_var_int(stream:io.RawIOBase, maxsize):
 
     return result
 
-def read_var_int(stream:io.RawIOBase):
+
+def read_var_int(stream: io.RawIOBase):
     return _read_var_int(stream, 5)
 
-def read_var_long(stream:io.RawIOBase):
+
+def read_var_long(stream: io.RawIOBase):
     return _read_var_int(stream, 10)
 
+
 def _rshift_sign(val, n): return (val % 0x100000000) >> n
+
 
 def write_var_int(stream:io.RawIOBase, value):
     while True:
@@ -40,12 +46,29 @@ def write_var_int(stream:io.RawIOBase, value):
         if not value:
             break
 
+
 def get_packet(data):
     stream = io.BytesIO(data)
     length = read_var_int(stream)
     packet_id = read_var_int(stream)
     length -= stream.tell()
     return packet_id, stream.read(length)
+
+
+def get_packet_safe(sock: socket.socket):
+    stream = io.BytesIO(sock.recv(2048))
+    length = read_var_int(stream)
+    length += stream.tell()
+    packet_id = read_var_int(stream)
+    length -= stream.tell()
+    data = stream.read(length)
+    read = len(data)
+    while read < length:
+        newdata = sock.recv(length - read)
+        read += len(newdata)
+        data += newdata
+    return packet_id, data
+
 
 def make_packet(packet_id, data=b''):
     stream_data = io.BytesIO()
@@ -56,12 +79,14 @@ def make_packet(packet_id, data=b''):
     write_var_int(stream_length, length)
     return stream_length.getvalue() + stream_data.getvalue()
 
-def write_string(stream:io.RawIOBase, string):
+
+def write_string(stream: io.RawIOBase, string):
     string = string.encode('utf-8')
     write_var_int(stream, len(string))
     stream.write(string)
 
-def read_string(stream:io.RawIOBase):
+
+def read_string(stream: io.RawIOBase):
     length = read_var_int(stream)
     string = stream.read(length)
     return string.decode('utf-8')
